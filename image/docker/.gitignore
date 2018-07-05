@@ -1,0 +1,15 @@
+# Ignore everything
+*
+
+# But not these files...
+!/.gitignore
+!/*.jar
+!/*.sh
+# etc...
+
+# ...even if they are in subdirectories
+!*/
+
+# if the files to be tracked are in subdirectories
+!/jprofiler/bin/linux-x64/*.so
+!/jprofiler/*
