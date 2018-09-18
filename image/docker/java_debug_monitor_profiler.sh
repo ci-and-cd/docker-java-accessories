@@ -30,9 +30,9 @@ if [ ! -z "${JAVA_JMX_PORT}" ]; then
     JAVA_OPTS="${JAVA_OPTS} -Dcom.sun.management.jmxremote=true"
     JAVA_OPTS="${JAVA_OPTS} -Dcom.sun.management.jmxremote.local.only=false"
     JAVA_OPTS="${JAVA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
-    if [ ! -z "${SECURITY_USER_NAME}" ] && [ ! -z "${SECURITY_USER_PASSWORD}" ]; then
-        echo "${SECURITY_USER_NAME} ${SECURITY_USER_PASSWORD}" > /tmp/password.properties
-        echo "${SECURITY_USER_NAME} readwrite \\" > /tmp/access.properties
+    if [ ! -z "${SPRING_SECURITY_USER_NAME}" ] && [ ! -z "${SPRING_SECURITY_USER_PASSWORD}" ]; then
+        echo "${SPRING_SECURITY_USER_NAME} ${SPRING_SECURITY_USER_PASSWORD}" > /tmp/password.properties
+        echo "${SPRING_SECURITY_USER_NAME} readwrite \\" > /tmp/access.properties
         echo "  create com.sun.management.*,com.oracle.jrockit.* \\" >> /tmp/access.properties
         echo "  unregister" >> /tmp/access.properties
         chmod 600 /tmp/password.properties /tmp/access.properties
