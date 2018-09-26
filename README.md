@@ -10,7 +10,7 @@ Dockerfile [ci-and-cd/docker-java-accessories on Github](https://github.com/ci-a
 
 ```dockerfile
 
-FROM alpine:3.7
+FROM alpine:3.8
 
 COPY --from=cirepo/java-accessories:latest-archive /data/root /
 

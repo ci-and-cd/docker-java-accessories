@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
       args:
       - IMAGE_ARG_FILESERVER=${IMAGE_ARG_FILESERVER}
-      #- IMAGE_ARG_FILESERVER=${IMAGE_ARG_FILESERVER:-http://o9wbz99tz.bkt.clouddn.com}
+      #- IMAGE_ARG_FILESERVER=${IMAGE_ARG_FILESERVER:-http://fileserver.infra.top}
     image: ${IMAGE_PREFIX:-cirepo}/${IMAGE_NAME:-java-accessories}:${IMAGE_TAG:-latest}
   #docker-compose build dumper
   dumper:

@@ -1,8 +1,5 @@
 
-FROM alpine:3.7
+FROM scratch
 
 
 COPY --from=tmp/dumper:latest /data/root /data/root
-
-
-#RUN sudo chown -R $(whoami):$(id -gn) /data/root/home/$(whoami)
