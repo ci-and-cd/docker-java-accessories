@@ -9,7 +9,7 @@ services:
       args:
       - IMAGE_ARG_FILESERVER=${IMAGE_ARG_FILESERVER}
       #- IMAGE_ARG_FILESERVER=${IMAGE_ARG_FILESERVER:-http://fileserver.infra.top}
-    image: ${IMAGE_PREFIX:-cirepo}/${IMAGE_NAME:-java-accessories}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_PREFIX:-cirepo/}${IMAGE_NAME:-java-accessories}:${IMAGE_TAG:-latest}
   #docker-compose build dumper
   dumper:
     build:
@@ -21,4 +21,4 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_archive
-    image: ${IMAGE_PREFIX:-cirepo}/${IMAGE_NAME:-java-accessories}:${IMAGE_TAG:-latest}-archive
+    image: ${IMAGE_PREFIX:-cirepo/}${IMAGE_NAME:-java-accessories}:${IMAGE_TAG:-latest}-archive
