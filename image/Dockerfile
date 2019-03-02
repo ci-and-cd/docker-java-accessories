@@ -1,5 +1,5 @@
 
-FROM alpine:3.8
+FROM alpine:3.9
 
 
 COPY --chown=root:root docker /data
