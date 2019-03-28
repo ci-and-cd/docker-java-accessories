@@ -3,6 +3,8 @@
 
 # But not these files...
 !/.gitignore
+!/arthas-3.1.0/*
+!/perf-map-agent-alpine-3.9_amd64/**/*
 !/*.jar
 !/*.sh
 # etc...

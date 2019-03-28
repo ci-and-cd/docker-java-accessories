@@ -57,7 +57,7 @@ if [[ ! -z "${JAVA_JSTATD_RMI_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RH_PORT}" ]] &
 fi
 
 # JProfiler agent, see: http://resources.ej-technologies.com/jprofiler/help/doc/sessions/remoteTable.html
-# find config.xml at client side ~/.jprofiler9/config.xml
+# find config.xml at client side ~/.jprofiler10/config.xml
 if [[ ! -z "${JAVA_JPROFILER_PORT}" ]] && [[ ! -z "${JAVA_JPROFILER_CONFIG}" ]]; then
     JAVA_OPTS="-agentpath:/opt/jprofiler/bin/linux-x64/libjprofilerti.so=port=${JAVA_JPROFILER_PORT},nowait,config=${JAVA_JPROFILER_CONFIG} ${JAVA_OPTS}"
     (>&2 echo "Java JProfiler enabled, at ${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JPROFILER_PORT}")
@@ -65,3 +65,8 @@ fi
 
 # YourKit doc, see: https://www.yourkit.com/docs/
 # YourKit agent, see: https://helpx.adobe.com/experience-manager/kb/HowToConfigureYourKitJavaProfiler.html
+
+# https://medium.com/netflix-techblog/java-in-flames-e763b3d32166
+if [[ "${PRESERVE_FRAME_POINTER}" == "true" ]]; then
+    JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer";
+fi
