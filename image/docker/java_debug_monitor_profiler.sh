@@ -68,5 +68,5 @@ fi
 
 # https://medium.com/netflix-techblog/java-in-flames-e763b3d32166
 if [[ "${PRESERVE_FRAME_POINTER}" == "true" ]]; then
-    JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer";
+    JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer -XX:InlineSmallCode=500";
 fi
