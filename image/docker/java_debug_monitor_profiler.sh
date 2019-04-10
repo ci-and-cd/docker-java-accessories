@@ -68,6 +68,6 @@ fi
 # YourKit agent, see: https://helpx.adobe.com/experience-manager/kb/HowToConfigureYourKitJavaProfiler.html
 
 # https://medium.com/netflix-techblog/java-in-flames-e763b3d32166
-if [[ "${PRESERVE_FRAME_POINTER}" == "true" ]]; then
+if [[ "${JAVA_PRESERVE_FRAME_POINTER}" == "true" ]]; then
     JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer -XX:InlineSmallCode=500 -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints";
 fi
