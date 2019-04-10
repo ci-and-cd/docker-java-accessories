@@ -3,11 +3,7 @@
 
 # But not these files...
 !/.gitignore
-!/arthas-3.1.0/*
-!/jstack-profiler/**/*
-!/perf-map-agent-alpine-3.9_amd64/**/*
-!/*.jar
-!/*.sh
+!/opt/**/*
 # etc...
 
 # ...even if they are in subdirectories

@@ -1,0 +1,2 @@
+--add-opens java.desktop/com.apple.eawt.event=ALL-UNNAMED
+--add-opens java.desktop/com.apple.laf=ALL-UNNAMED
