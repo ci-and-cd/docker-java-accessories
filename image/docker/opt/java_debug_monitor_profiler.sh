@@ -68,7 +68,7 @@ fi
 if [[ ! -z "${JAVA_JSTATD_RMI_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RH_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RV_PORT}" ]]; then
     # see: https://stackoverflow.com/questions/51032095/starting-jstatd-in-java-9
     JAVA_JSTATD_JAR="ejstatd-1.0.0.jar"
-    if [[ "${JAVA_VERSION}" == "11.0" ]]; then
+    if (( $(echo "${JAVA_VERSION} > 10.0" | bc -l) )); then
         JAVA_JSTATD_JAR="ejstatd-1.0.0-java11.jar"
         # Java11's default policy file: -Djava.security.policy=${JAVA_HOME}/conf/security/java.policy
         #JAVA_SECURITY_POLICY="/opt/ejstatd/java11-jstatd.all.policy"
