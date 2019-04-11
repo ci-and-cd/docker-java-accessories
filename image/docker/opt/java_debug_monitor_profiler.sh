@@ -10,12 +10,20 @@ fi
 (>&2 echo "java.rmi.server.hostname: ${JAVA_RMI_SERVER_HOSTNAME}")
 
 
-if [[ ! -z "${JAVA_DEBUG_PORT}" ]]; then
-    # For running remote JVM
-    #JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUG_PORT} ${JAVA_OPTS}";
-    # For JDK 1.4.x +
-    JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUG_PORT} ${JAVA_OPTS}";
-    (>&2 echo "Java remote debug enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_DEBUG_PORT}'")
+if [[ ! -z "${JPDA_ADDRESS}" ]]; then
+
+    JPDA=""
+    if (( $(echo "${JAVA_VERSION} < 9.0" | bc -l) )); then
+        # For JDK 1.4.x +
+        JPDA="${JPDA}-Xdebug -Xrunjdwp:transport=${JPDA_TRANSPORT:-dt_socket},server=${JPDA_SERVER:-y},suspend=${JPDA_SUSPEND:-n},address=${JPDA_ADDRESS}";
+        # -Xrunjdwp has been deprecated in Java 8 and removed in Java 9.
+    else
+        JPDA="${JPDA}-agentlib:jdwp=transport=${JPDA_TRANSPORT:-dt_socket},server=${JPDA_SERVER:-y},suspend=${JPDA_SUSPEND:-n},address=${JPDA_ADDRESS}"
+    fi
+
+    JAVA_OPTS="${JPDA} ${JAVA_OPTS}"
+
+    (>&2 echo "Java remote debug enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JPDA_ADDRESS}', JPDA '${JPDA}'")
 fi
 
 
