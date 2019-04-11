@@ -24,9 +24,29 @@ fi
 # see: https://github.com/anthony-o/ejstatd
 if [[ ! -z "${JAVA_JMX_PORT}" ]]; then
     if [[ "${JAVA_JMC_ENABLED}" = "true" ]]; then
-        JAVA_OPTS="${JAVA_OPTS} -XX:+UnlockCommercialFeatures -XX:+FlightRecorder"
-        (>&2 echo "Java JMC enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JMX_PORT}'")
+        # Flight recording also can be started by jcmd `jcmd ${pid} JFR.start name=myrecording settings=profile delay=20s duration=2m filename=/tmp/myrecording.jfr`
+        JAVA_FLIGHT_RECORDER="-XX:+FlightRecorder"
+
+        # If you want to configure the cutoff for how long to search for references, that can be done in the template file,
+        # for example, these are the default settings in the profile template (JDK_HOME/lib/jfr/profile.jfc):
+        #old-object-queue-size=256
+        if [[ -n "${JAVA_FLIGHT_RECORDER_OPTIONS}" ]]; then
+            JAVA_FLIGHT_RECORDER="${JAVA_FLIGHT_RECORDER} -XX:FlightRecorderOptions=${JAVA_FLIGHT_RECORDER_OPTIONS}";
+        fi
+
+        #delay=20s,disk=true,dumponexit=true,duration=2m,filename=/tmp/myrecording.jfr,maxsize=1024m,maxage=1d,name=myrecording,path-to-gc-roots=true,settings=profile
+        if [[ -n "${JAVA_START_FLIGHT_RECORDING}" ]]; then
+            JAVA_FLIGHT_RECORDER="${JAVA_FLIGHT_RECORDER} -XX:StartFlightRecording=${JAVA_START_FLIGHT_RECORDING}";
+        fi
+
+        if [[ "${IS_ORACLE_JAVA}" == "true" ]] && [[ "${IS_OPENJDK}" == "false" ]]; then
+            JAVA_FLIGHT_RECORDER="-XX:+UnlockCommercialFeatures ${JAVA_FLIGHT_RECORDER}";
+        fi
+
+        JAVA_OPTS="${JAVA_OPTS} ${JAVA_FLIGHT_RECORDER}"
+        (>&2 echo "Java JMC enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JMX_PORT}', options '${JAVA_FLIGHT_RECORDER}'")
     fi
+
     JAVA_OPTS="${JAVA_OPTS} -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME}"
     JAVA_OPTS="${JAVA_OPTS} -Dcom.sun.management.jmxremote.rmi.port=${JAVA_JMX_PORT}"
     JAVA_OPTS="${JAVA_OPTS} -Dcom.sun.management.jmxremote.port=${JAVA_JMX_PORT}"
@@ -56,7 +76,7 @@ fi
 
 
 # JProfiler agent, see: http://resources.ej-technologies.com/jprofiler/help/doc/sessions/remoteTable.html
-# find config.xml at client side ~/.jprofiler10/config.xml
+# find config.xml at client side ${HOME}/.jprofiler11/config.xml
 if [[ ! -z "${JAVA_JPROFILER_CONFIG}" ]] && [[ ! -z "${JAVA_JPROFILER_SESSION_ID}" ]]; then
     JAVA_JPROFILER_AGENT="-agentpath:${JAVA_JPROFILER_PATH:-/opt/jprofiler}/bin/linux-x64/libjprofilerti.so="
     if [[ -n "${JAVA_JPROFILER_PORT}" ]]; then
