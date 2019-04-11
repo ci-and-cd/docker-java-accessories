@@ -9,6 +9,7 @@ else
 fi
 (>&2 echo "java.rmi.server.hostname: ${JAVA_RMI_SERVER_HOSTNAME}")
 
+
 if [[ ! -z "${JAVA_DEBUG_PORT}" ]]; then
     # For running remote JVM
     #JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUG_PORT} ${JAVA_OPTS}";
@@ -16,6 +17,7 @@ if [[ ! -z "${JAVA_DEBUG_PORT}" ]]; then
     JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUG_PORT} ${JAVA_OPTS}";
     (>&2 echo "Java remote debug enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_DEBUG_PORT}'")
 fi
+
 
 # see: https://www.jamasoftware.com/blog/monitoring-java-applications/
 # see: https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html
@@ -46,16 +48,12 @@ if [[ ! -z "${JAVA_JMX_PORT}" ]]; then
     (>&2 echo "Java JMX management enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JMX_PORT}'")
 fi
 
-# ejstatd, see: https://github.com/anthony-o/ejstatd
-if [[ ! -z "${JAVA_JSTATD_RMI_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RH_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RV_PORT}" ]]; then
-    java -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME} \
-        -cp "/opt/ejstatd/ejstatd-1.0.0.jar:${JAVA_HOME}/lib/tools.jar" \
-        com.github.anthony_o.ejstatd.EJstatd \
-        -pr${JAVA_JSTATD_RMI_PORT} \
-        -ph${JAVA_JSTATD_RH_PORT} \
-        -pv${JAVA_JSTATD_RV_PORT} &
-    (>&2 echo "Java jstatd enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JSTATD_RMI_PORT} ${JAVA_JSTATD_RH_PORT} ${JAVA_JSTATD_RV_PORT}'")
+
+# https://medium.com/netflix-techblog/java-in-flames-e763b3d32166
+if [[ "${JAVA_PRESERVE_FRAME_POINTER}" == "true" ]]; then
+    JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer -XX:InlineSmallCode=500 -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints";
 fi
+
 
 # JProfiler agent, see: http://resources.ej-technologies.com/jprofiler/help/doc/sessions/remoteTable.html
 # find config.xml at client side ~/.jprofiler10/config.xml
@@ -64,10 +62,50 @@ if [[ ! -z "${JAVA_JPROFILER_PORT}" ]] && [[ ! -z "${JAVA_JPROFILER_CONFIG}" ]];
     (>&2 echo "Java JProfiler enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JPROFILER_PORT}'")
 fi
 
+
+# ejstatd, see: https://github.com/anthony-o/ejstatd
+# Caused by: java.security.AccessControlException: access denied ("java.util.PropertyPermission" "sun.jvmstat.monitor.local" "read")
+if [[ ! -z "${JAVA_JSTATD_RMI_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RH_PORT}" ]] && [[ ! -z "${JAVA_JSTATD_RV_PORT}" ]]; then
+    # see: https://stackoverflow.com/questions/51032095/starting-jstatd-in-java-9
+    JAVA_JSTATD_JAR="ejstatd-1.0.0.jar"
+    if [[ "${JAVA_VERSION}" == "11.0" ]]; then
+        JAVA_JSTATD_JAR="ejstatd-1.0.0-java11.jar"
+        # Java11's default policy file: -Djava.security.policy=${JAVA_HOME}/conf/security/java.policy
+        #JAVA_SECURITY_POLICY="/opt/ejstatd/java11-jstatd.all.policy"
+    elif [[ "${JAVA_VERSION}" == "10.0" ]]; then
+        JAVA_JSTATD_JAR="ejstatd-1.0.0-java10.jar"
+        #JAVA_SECURITY_POLICY="/opt/ejstatd/java10-jstatd.all.policy"
+    elif [[ "${JAVA_VERSION}" == "9.0" ]]; then
+        JAVA_JSTATD_JAR="ejstatd-1.0.0-java9.jar"
+        #JAVA_SECURITY_POLICY="/opt/ejstatd/java9-jstatd.all.policy"
+    elif [[ "${JAVA_VERSION}" == "1.8" ]]; then
+        JAVA_JSTATD_JAR="ejstatd-1.0.0-java8.jar"
+        #JAVA_SECURITY_POLICY="/opt/ejstatd/java8-jstatd.all.policy"
+    else
+        (>&2 echo "Unsupported java version ${JAVA_VERSION}")
+    fi
+
+    if (( $(echo "${JAVA_VERSION} > 8.0" | bc -l) )); then
+        java --add-modules jdk.jstatd,jdk.internal.jvmstat \
+            -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME} \
+            -cp "/opt/ejstatd/${JAVA_JSTATD_JAR}" \
+            com.github.anthony_o.ejstatd.EJstatd \
+            -pr${JAVA_JSTATD_RMI_PORT} \
+            -ph${JAVA_JSTATD_RH_PORT} \
+            -pv${JAVA_JSTATD_RV_PORT} &
+    else
+        java \
+            -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME} \
+            -cp "/opt/ejstatd/${JAVA_JSTATD_JAR}:${JAVA_HOME}/lib/tools.jar" \
+            com.github.anthony_o.ejstatd.EJstatd \
+            -pr${JAVA_JSTATD_RMI_PORT} \
+            -ph${JAVA_JSTATD_RH_PORT} \
+            -pv${JAVA_JSTATD_RV_PORT} &
+    fi
+
+    (>&2 echo "Java jstatd enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JSTATD_RMI_PORT} ${JAVA_JSTATD_RH_PORT} ${JAVA_JSTATD_RV_PORT}'")
+fi
+
+
 # YourKit doc, see: https://www.yourkit.com/docs/
 # YourKit agent, see: https://helpx.adobe.com/experience-manager/kb/HowToConfigureYourKitJavaProfiler.html
-
-# https://medium.com/netflix-techblog/java-in-flames-e763b3d32166
-if [[ "${JAVA_PRESERVE_FRAME_POINTER}" == "true" ]]; then
-    JAVA_OPTS="${JAVA_OPTS} -XX:+PreserveFramePointer -XX:InlineSmallCode=500 -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints";
-fi

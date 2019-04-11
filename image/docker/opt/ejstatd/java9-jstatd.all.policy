@@ -1,0 +1,3 @@
+grant codebase "jrt:/jdk.jstatd" {
+    permission java.security.AllPermission;
+};
