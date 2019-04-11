@@ -57,9 +57,17 @@ fi
 
 # JProfiler agent, see: http://resources.ej-technologies.com/jprofiler/help/doc/sessions/remoteTable.html
 # find config.xml at client side ~/.jprofiler10/config.xml
-if [[ ! -z "${JAVA_JPROFILER_PORT}" ]] && [[ ! -z "${JAVA_JPROFILER_CONFIG}" ]]; then
-    JAVA_OPTS="-agentpath:/opt/jprofiler/bin/linux-x64/libjprofilerti.so=port=${JAVA_JPROFILER_PORT},nowait,config=${JAVA_JPROFILER_CONFIG} ${JAVA_OPTS}"
-    (>&2 echo "Java JProfiler enabled, at '${JAVA_RMI_SERVER_HOSTNAME}:${JAVA_JPROFILER_PORT}'")
+if [[ ! -z "${JAVA_JPROFILER_CONFIG}" ]] && [[ ! -z "${JAVA_JPROFILER_SESSION_ID}" ]]; then
+    JAVA_JPROFILER_AGENT="-agentpath:${JAVA_JPROFILER_PATH:-/opt/jprofiler}/bin/linux-x64/libjprofilerti.so="
+    if [[ -n "${JAVA_JPROFILER_PORT}" ]]; then
+        JAVA_JPROFILER_AGENT="${JAVA_JPROFILER_AGENT}port=${JAVA_JPROFILER_PORT},nowait"
+    else
+        JAVA_JPROFILER_AGENT="${JAVA_JPROFILER_AGENT}offline"
+    fi
+    JAVA_JPROFILER_AGENT="${JAVA_JPROFILER_AGENT},id=${JAVA_JPROFILER_SESSION_ID}"
+    JAVA_JPROFILER_AGENT="${JAVA_JPROFILER_AGENT},config=${JAVA_JPROFILER_CONFIG}"
+    JAVA_OPTS="${JAVA_JPROFILER_AGENT} ${JAVA_OPTS}"
+    (>&2 echo "Java JProfiler enabled, agent '${JAVA_JPROFILER_AGENT}'")
 fi
 
 
